@@ -34,6 +34,12 @@ async function run() {
         const foodCollection = database.collection("foodCollection");
         const orderCollection = database.collection("orderCollection");
 
+        app.get('/food-details', async(req, res)=>{
+            const foodDetails = await foodCollection.find().toArray();
+            res.send(foodDetails);
+        })
+
+
         app.post('/add-food', async (req, res) => {
             const foodDetails = req.body;
             const result = await foodCollection.insertOne(foodDetails);
