@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 })
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.RESTURAUNT_USER}:${process.env.RESTURAUNT_PASS}@cluster0.udgfocl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -37,6 +37,15 @@ async function run() {
         app.get('/food-details', async(req, res)=>{
             const foodDetails = await foodCollection.find().toArray();
             res.send(foodDetails);
+        })
+
+        app.get('/food-details/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id : new ObjectId(id)}
+
+            const result = await foodCollection.findOne(query);
+            res.send(result);
+            
         })
 
 
