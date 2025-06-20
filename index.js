@@ -34,18 +34,41 @@ async function run() {
         const foodCollection = database.collection("foodCollection");
         const orderCollection = database.collection("orderCollection");
 
-        app.get('/food-details', async(req, res)=>{
+        app.get('/food-details', async (req, res) => {
             const foodDetails = await foodCollection.find().toArray();
             res.send(foodDetails);
         })
 
-        app.get('/food-details/:id', async(req, res)=>{
+        app.get('/sorted-food-data', async (req, res) => {
+            const sortByOption = req.query.sortBy;
+
+            let foodDetails;
+            let option = {};
+
+            if(sortByOption === 'PriceAsc'){
+                option = {price: 1}
+            }
+            else if(sortByOption === 'PriceDsc'){
+                option = {price: -1}
+            }
+            else if(sortByOption === 'Food Origin'){
+                option = {foodOrigin: 1}
+            }
+            else{
+                option = {foodCategory: 1}
+                
+            }
+            foodDetails = await foodCollection.find().sort(option).toArray();
+            res.send(foodDetails);
+        })
+
+        app.get('/food-details/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id : new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
 
             const result = await foodCollection.findOne(query);
             res.send(result);
-            
+
         })
 
 
