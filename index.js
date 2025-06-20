@@ -9,7 +9,7 @@ app.use(cors());
 
 
 app.get('/', (req, res) => {
-    res.send("Restaurant Management website is cooking!")
+    res.send("Restaurant Management website is cooking!");
 })
 
 
@@ -45,18 +45,18 @@ async function run() {
             let foodDetails;
             let option = {};
 
-            if(sortByOption === 'PriceAsc'){
-                option = {price: 1}
+            if (sortByOption === 'PriceAsc') {
+                option = { price: 1 }
             }
-            else if(sortByOption === 'PriceDsc'){
-                option = {price: -1}
+            else if (sortByOption === 'PriceDsc') {
+                option = { price: -1 }
             }
-            else if(sortByOption === 'Food Origin'){
-                option = {foodOrigin: 1}
+            else if (sortByOption === 'Food Origin') {
+                option = { foodOrigin: 1 }
             }
-            else{
-                option = {foodCategory: 1}
-                
+            else {
+                option = { foodCategory: 1 }
+
             }
             foodDetails = await foodCollection.find().sort(option).toArray();
             res.send(foodDetails);
@@ -71,9 +71,9 @@ async function run() {
 
         })
 
-        app.get('/my-added-food', async(req, res)=>{
+        app.get('/my-added-food', async (req, res) => {
             const userEmail = req.query.email;
-            const query = {foodAuthorEmail : userEmail}
+            const query = { foodAuthorEmail: userEmail }
             const result = await foodCollection.find(query).toArray();
             res.send(result)
         })
@@ -84,9 +84,28 @@ async function run() {
             res.send(result);
         })
 
-    } finally {
-        // await client.close();
-    }
+
+        // order APIs (order collection)
+
+        app.post('/purchase-food', async (req, res) => {
+            const foodDetails = req.body;
+            const { _id: foodId, orderQuantity, buyerName, buyerEmail, orderDate} = foodDetails;
+            const orderDetails = { foodId, orderQuantity, buyerName, buyerEmail, orderDate };
+
+            //adding to order list
+            const result1 = await orderCollection.insertOne(orderDetails);
+
+            // updating food quantity
+            const query = { _id: new ObjectId(foodId) }
+            const updateDoc = {
+                $inc: { quantity: -orderQuantity }
+            }
+            const result2 = await foodCollection.updateOne(query, updateDoc);
+
+            res.send(result1);
+        })
+
+    } finally { }
 
 }
 run().catch(console.dir);
