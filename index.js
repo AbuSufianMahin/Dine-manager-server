@@ -84,12 +84,25 @@ async function run() {
             res.send(result);
         })
 
+        // API for searching
+        app.get('/search-food', async (req, res) => {
+            const foodName = req.query.foodName;
+            // console.log(foodName);
+            const query = {
+                foodName: { $regex: foodName, $options: 'i' }
+            }
+            const result = await foodCollection.find(query).toArray();
+
+            console.log("new");
+            res.send(result);
+        })
+
 
         // order APIs (order collection)
 
         app.post('/purchase-food', async (req, res) => {
             const foodDetails = req.body;
-            const { _id: foodId, orderQuantity, buyerName, buyerEmail, orderDate} = foodDetails;
+            const { _id: foodId, orderQuantity, buyerName, buyerEmail, orderDate } = foodDetails;
             const orderDetails = { foodId, orderQuantity, buyerName, buyerEmail, orderDate };
 
             //adding to order list
@@ -105,15 +118,19 @@ async function run() {
             res.send(result1);
         })
 
+        app.delete('/food/:id', async (req, res) => {
+            const foodId = req.params.id;
+            const query = { _id: new ObjectId(foodId) };
+
+            const result = await foodCollection.deleteOne(query);
+            res.send(result);
+        })
     } finally { }
 
 }
 run().catch(console.dir);
 
 
-
-
 app.listen(port, () => {
     console.log("Restaurant Management website is running on port:", port);
 })
-
