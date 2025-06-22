@@ -87,18 +87,34 @@ async function run() {
         // API for searching
         app.get('/search-food', async (req, res) => {
             const foodName = req.query.foodName;
-            // console.log(foodName);
             const query = {
                 foodName: { $regex: foodName, $options: 'i' }
             }
             const result = await foodCollection.find(query).toArray();
-
-            console.log("new");
             res.send(result);
         })
 
 
         // order APIs (order collection)
+
+        app.get('/my-orders', async(req, res)=>{
+            const email = req.query.email;
+            const orderQuery = {buyerEmail: email};
+            const orderDetails = await orderCollection.find(orderQuery).toArray();
+            
+            const orderedFoodDetails = [];
+
+            for(const order of orderDetails){
+                const foodQuery = {_id: new ObjectId(order.foodId)}
+                const result = await foodCollection.findOne(foodQuery);
+                result.orderQuantity = order.orderQuantity;
+                result.orderDate = order.orderDate;
+                result.orderId = order._id;
+                orderedFoodDetails.push(result);
+            }
+            
+            res.send(orderedFoodDetails);
+        })
 
         app.post('/purchase-food', async (req, res) => {
             const foodDetails = req.body;
