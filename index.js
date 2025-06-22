@@ -84,6 +84,14 @@ async function run() {
             res.send(result);
         })
 
+        app.delete('/food/:id', async (req, res) => {
+            const foodId = req.params.id;
+            const query = { _id: new ObjectId(foodId) };
+
+            const result = await foodCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // API for searching
         app.get('/search-food', async (req, res) => {
             const foodName = req.query.foodName;
@@ -97,22 +105,22 @@ async function run() {
 
         // order APIs (order collection)
 
-        app.get('/my-orders', async(req, res)=>{
+        app.get('/my-orders', async (req, res) => {
             const email = req.query.email;
-            const orderQuery = {buyerEmail: email};
+            const orderQuery = { buyerEmail: email };
             const orderDetails = await orderCollection.find(orderQuery).toArray();
-            
+
             const orderedFoodDetails = [];
 
-            for(const order of orderDetails){
-                const foodQuery = {_id: new ObjectId(order.foodId)}
+            for (const order of orderDetails) {
+                const foodQuery = { _id: new ObjectId(order.foodId) }
                 const result = await foodCollection.findOne(foodQuery);
                 result.orderQuantity = order.orderQuantity;
                 result.orderDate = order.orderDate;
                 result.orderId = order._id;
                 orderedFoodDetails.push(result);
             }
-            
+
             res.send(orderedFoodDetails);
         })
 
@@ -134,13 +142,24 @@ async function run() {
             res.send(result1);
         })
 
-        app.delete('/food/:id', async (req, res) => {
-            const foodId = req.params.id;
-            const query = { _id: new ObjectId(foodId) };
+        app.delete('/order/:id', async (req, res) => {
+            const orderId = req.params.id;
+            const deleteQuery = { _id: new ObjectId(orderId) };
 
-            const result = await foodCollection.deleteOne(query);
-            res.send(result);
+            // adding back the quantity to food collection
+            const orderData = await orderCollection.findOne(deleteQuery);
+            const foodQuery = { _id: new ObjectId(orderData.foodId) }
+
+            const updateDoc = {
+                $inc: { quantity: +orderData.orderQuantity }
+            }
+            const updateResult = await foodCollection.updateOne(foodQuery, updateDoc);
+
+            // deleting from order list
+            const deleteResult = await orderCollection.deleteOne(deleteQuery);
+            res.send(deleteResult);
         })
+
     } finally { }
 
 }
