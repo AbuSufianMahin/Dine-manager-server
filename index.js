@@ -86,12 +86,12 @@ async function run() {
 
         app.put('/edit-my-food', async (req, res) => {
             const newData = req.body;
-            const {_id, ...newFoodData} = newData;
+            const { _id, ...newFoodData } = newData;
 
-            const query = {_id: new ObjectId(_id)};
+            const query = { _id: new ObjectId(_id) };
 
             const updateDoc = {
-                $set : newFoodData
+                $set: newFoodData
             }
 
             const result = await foodCollection.updateOne(query, updateDoc);
@@ -100,9 +100,14 @@ async function run() {
 
         app.delete('/food/:id', async (req, res) => {
             const foodId = req.params.id;
-            const query = { _id: new ObjectId(foodId) };
 
+            // deleting from food collection
+            const query = { _id: new ObjectId(foodId) };
             const result = await foodCollection.deleteOne(query);
+
+            //deleting the food from all the orders
+            const result2 = await orderCollection.deleteMany({ foodId });
+            
             res.send(result);
         })
 
