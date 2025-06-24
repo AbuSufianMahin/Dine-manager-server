@@ -107,7 +107,7 @@ async function run() {
 
             //deleting the food from all the orders
             const result2 = await orderCollection.deleteMany({ foodId });
-            
+
             res.send(result);
         })
 
@@ -151,17 +151,20 @@ async function run() {
             //adding to order list
             const result1 = await orderCollection.insertOne(orderDetails);
 
-            // updating food quantity
+            // updating food quantity and totalsold count
             const query = { _id: new ObjectId(foodId) }
             const updateDoc = {
-                $inc: { quantity: -orderQuantity }
+                $inc: {
+                    quantity: -orderQuantity,
+                    totalSold: +orderQuantity
+                }
             }
             const result2 = await foodCollection.updateOne(query, updateDoc);
 
             res.send(result1);
         })
 
-        app.delete('/order/:id', async (req, res) => {
+        app.delete('/cancel-order/:id', async (req, res) => {
             const orderId = req.params.id;
             const deleteQuery = { _id: new ObjectId(orderId) };
 
@@ -170,7 +173,10 @@ async function run() {
             const foodQuery = { _id: new ObjectId(orderData.foodId) }
 
             const updateDoc = {
-                $inc: { quantity: +orderData.orderQuantity }
+                $inc: { 
+                    quantity: +orderData.orderQuantity,
+                    totalSold: -orderData.orderQuantity
+                 }
             }
             const updateResult = await foodCollection.updateOne(foodQuery, updateDoc);
 
