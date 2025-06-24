@@ -39,6 +39,11 @@ async function run() {
             res.send(foodDetails);
         })
 
+        app.get('/top-food-details', async (req, res) => {
+            const topFoodDetails = await foodCollection.find().sort({totalSold: -1}).limit(6).toArray();
+            res.send(topFoodDetails);
+        })
+
         app.get('/sorted-food-data', async (req, res) => {
             const sortByOption = req.query.sortBy;
 
@@ -173,10 +178,10 @@ async function run() {
             const foodQuery = { _id: new ObjectId(orderData.foodId) }
 
             const updateDoc = {
-                $inc: { 
+                $inc: {
                     quantity: +orderData.orderQuantity,
                     totalSold: -orderData.orderQuantity
-                 }
+                }
             }
             const updateResult = await foodCollection.updateOne(foodQuery, updateDoc);
 
