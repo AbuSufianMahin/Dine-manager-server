@@ -1,6 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
+const admin = require("firebase-admin");
+const serviceAccount = require("./dine-manager-firebase-adminsdk.json");
+
 const app = express();
 const port = process.env.POST || 3000;
 
@@ -24,6 +28,40 @@ const client = new MongoClient(uri, {
     }
 });
 
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
+
+const verifyFirebaseToken = async (req, res, next) => {
+    const authHeader = req.headers?.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).send({ errorCode: 401, message: "Unauthorized access" });
+    }
+    else {
+        const token = authHeader.split(' ')[1];
+
+        try {
+            const decodedToken = await admin.auth().verifyIdToken(token);
+            req.decodedToken = decodedToken;
+            next();
+        }
+        catch (error) {
+            return res.status(401).send({ errorCode: 401, message: "Unauthorized access" });
+        }
+    }
+}
+
+const verifyTokenEmail = async (req, res, next) => {
+
+    if (req.query.email !== req.decodedToken.email) {
+        return res.status(403).send({ errorCode: 403, message: "Forbidden access" });
+    }
+    next();
+}
+
 async function run() {
     try {
         await client.connect();
@@ -40,7 +78,7 @@ async function run() {
         })
 
         app.get('/top-food-details', async (req, res) => {
-            const topFoodDetails = await foodCollection.find().sort({totalSold: -1}).limit(6).toArray();
+            const topFoodDetails = await foodCollection.find().sort({ totalSold: -1 }).limit(6).toArray();
             res.send(topFoodDetails);
         })
 
@@ -76,7 +114,7 @@ async function run() {
 
         })
 
-        app.get('/my-added-food', async (req, res) => {
+        app.get('/my-added-food', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
             const userEmail = req.query.email;
             const query = { foodAuthorEmail: userEmail }
             const result = await foodCollection.find(query).toArray();
