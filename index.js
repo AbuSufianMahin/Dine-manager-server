@@ -3,13 +3,24 @@ const express = require('express');
 const cors = require('cors');
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./dine-manager-firebase-adminsdk.json");
+
+const decoded = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString('utf8');
+const serviceAccount = JSON.parse(decoded);
 
 const app = express();
 const port = process.env.POST || 3000;
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "restaurant-management-server-tan-pi.vercel.app",
+      "https://restaurant-management-sy-6dee9.web.app",
+    ],
+    credentials: true,
+  })
+);
 
 
 app.get('/', (req, res) => {
@@ -64,10 +75,6 @@ const verifyTokenEmail = async (req, res, next) => {
 
 async function run() {
     try {
-        await client.connect();
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-
         const database = client.db("Restaurant_managementDB");
         const foodCollection = database.collection("foodCollection");
         const orderCollection = database.collection("orderCollection");
@@ -165,7 +172,6 @@ async function run() {
             res.send(result);
         })
 
-
         // order APIs (order collection)
 
         app.get('/my-orders', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
@@ -229,7 +235,7 @@ async function run() {
             res.send(deleteResult);
         })
 
-    } finally { }
+    } finally {}
 
 }
 run().catch(console.dir);

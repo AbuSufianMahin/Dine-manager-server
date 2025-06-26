@@ -1,3 +1,4 @@
 node_modules
 .env
 dine-manager-firebase-adminsdk.json
+.vercel
