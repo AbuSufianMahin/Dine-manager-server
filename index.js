@@ -127,7 +127,8 @@ async function run() {
             res.send(result);
         })
 
-        app.put('/edit-my-food', async (req, res) => {
+        app.put('/edit-my-food', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
+
             const newData = req.body;
             const { _id, ...newFoodData } = newData;
 
@@ -141,7 +142,7 @@ async function run() {
             res.send(result);
         })
 
-        app.delete('/food/:id', async (req, res) => {
+        app.delete('/food/:id', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
             const foodId = req.params.id;
 
             // deleting from food collection
@@ -167,7 +168,7 @@ async function run() {
 
         // order APIs (order collection)
 
-        app.get('/my-orders', async (req, res) => {
+        app.get('/my-orders', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
             const email = req.query.email;
             const orderQuery = { buyerEmail: email };
             const orderDetails = await orderCollection.find(orderQuery).toArray();
