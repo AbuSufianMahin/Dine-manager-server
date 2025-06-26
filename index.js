@@ -121,7 +121,7 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/add-food', async (req, res) => {
+        app.post('/add-food', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
             const foodDetails = req.body;
             const result = await foodCollection.insertOne(foodDetails);
             res.send(result);
@@ -187,7 +187,7 @@ async function run() {
             res.send(orderedFoodDetails);
         })
 
-        app.post('/purchase-food', async (req, res) => {
+        app.post('/purchase-food', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
             const foodDetails = req.body;
             const { _id: foodId, orderQuantity, buyerName, buyerEmail, orderDate } = foodDetails;
             const orderDetails = { foodId, orderQuantity, buyerName, buyerEmail, orderDate };
@@ -208,7 +208,7 @@ async function run() {
             res.send(result1);
         })
 
-        app.delete('/cancel-order/:id', async (req, res) => {
+        app.delete('/cancel-order/:id', verifyFirebaseToken, verifyTokenEmail, async (req, res) => {
             const orderId = req.params.id;
             const deleteQuery = { _id: new ObjectId(orderId) };
 
