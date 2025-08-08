@@ -12,8 +12,7 @@ A full-stack restaurant management web application built using the **MERN** stac
 
 ## 📂 Repositories
 
-- 🔧 [Client Side](https://github.com/Programming-Hero-Web-Course4/b11a11-client-side-AbuSufianMahin)
-- 🔧 [Server Side](https://github.com/Programming-Hero-Web-Course4/b11a11-server-side-AbuSufianMahin)
+- 🔧 [Client Side](https://github.com/AbuSufianMahin/Dine-manager-client)
 
 ---
 
